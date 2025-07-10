@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Nu</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .quiz-container {
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    .question {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #333;
+      color: #fff;
+    }
+    .options button:hover {
+      background-color: #555;
+    }
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div class="question" id="question">Cargando...</div>
+    <div class="options" id="options"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    let cuestionarios = [];
+    let preguntas = [];
+    let indexPregunta = 0;
+
+    async function cargarCuestionarios() {
+      try {
+        const response = await fetch('trivias_nu_100.json');
+        cuestionarios = await response.json();
+        preguntas = cuestionarios[Math.floor(Math.random() * cuestionarios.length)];
+        mostrarPregunta();
+      } catch (error) {
+        document.getElementById("question").textContent = "Error al cargar preguntas";
+        console.error("Error cargando JSON:", error);
+      }
+    }
+
+    const preguntaEl = document.getElementById("question");
+    const opcionesEl = document.getElementById("options");
+    const resultEl = document.getElementById("result");
+
+    function mostrarPregunta() {
+      const actual = preguntas[indexPregunta];
+      preguntaEl.textContent = actual.pregunta;
+      opcionesEl.innerHTML = "";
+      resultEl.textContent = "";
+
+      actual.opciones.forEach((opcion, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = opcion;
+        btn.onclick = () => verificarRespuesta(i);
+        opcionesEl.appendChild(btn);
+      });
+    }
+
+    function verificarRespuesta(i) {
+      const correcta = preguntas[indexPregunta].correcta;
+      if (i === correcta) {
+        resultEl.textContent = "✅ ¡Correcto!";
+      } else {
+        resultEl.textContent = "❌ Incorrecto. La respuesta correcta era: " + preguntas[indexPregunta].opciones[correcta];
+      }
+      setTimeout(() => {
+        indexPregunta++;
+        if (indexPregunta < preguntas.length) {
+          mostrarPregunta();
+        } else {
+          preguntaEl.textContent = "🎉 ¡Trivia completada!";
+          opcionesEl.innerHTML = "";
+        }
+      }, 2000);
+    }
+
+    cargarCuestionarios();
+  </script>
+</body>
+</html>
